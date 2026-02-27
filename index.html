@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cloud Dice 🎲</title>
+    <style>
+        body { 
+            font-family: Arial; 
+            text-align:center; 
+            background:#ADD8E6; 
+            margin:0; 
+            padding:40px 20px; 
+        }
+        h1{ 
+            color:white; 
+            text-shadow:2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .dice-container { 
+            display:flex; 
+            justify-content:center; 
+            flex-wrap:wrap; 
+            margin:20px; 
+        }
+        .dice { 
+            width:80px; 
+            height:80px; 
+            margin:10px; 
+            border-radius:15px; 
+            border:3px solid black; 
+            transition:0.1s; 
+        }
+        #rollButton { 
+            padding:15px 30px; 
+            font-size:18px; 
+            border-radius:50px; 
+            cursor:pointer; 
+            margin-top:20px;
+        }
+        select { 
+            padding:10px 20px; 
+            font-size:16px; 
+            margin:10px; 
+            border-radius:10px; 
+        }
+    </style>
+</head>
+<body>
+
+<h1>☁️ Cloud Dice</h1>
+
+<label for="numDice">Number of Dice:</label>
+<select id="numDice">
+    <option value="1">1 Dice</option>
+    <option value="2">2 Dice</option>
+    <option value="3">3 Dice</option>
+    <option value="4">4 Dice</option>
+    <option value="5">5 Dice</option>
+    <option value="6">6 Dice</option>
+</select>
+
+<br>
+<button id="rollButton">Roll Dice</button>
+
+<!-- Tiny safe beep -->
+<audio id="diceSound" src="data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA="></audio>
+
+<div class="dice-container" id="diceContainer"></div>
+
+<script>
+    const diceContainer = document.getElementById("diceContainer");
+    const rollButton = document.getElementById("rollButton");
+    const diceSound = document.getElementById("diceSound");
+    const allColors = ["orange", "blue", "yellow", "purple", "red", "green"];
+    let isRolling = false;
+
+    function createDice(){
+        const dice = document.createElement("div");
+        dice.className="dice";
+        dice.style.backgroundColor = allColors[Math.floor(Math.random()*allColors.length)];
+        return dice;
+    }
+
+    function rollDice(){
+        if(isRolling) return; // prevent spam
+        isRolling = true;
+        rollButton.disabled = true;
+
+        // play tiny beep safely
+        diceSound.currentTime = 0;
+        diceSound.play();
+
+        const numDice = parseInt(document.getElementById("numDice").value);
+        diceContainer.innerHTML="";
+        const diceElements = [];
+        for(let i=0;i<numDice;i++){
+            const d = createDice();
+            diceContainer.appendChild(d);
+            diceElements.push(d);
+        }
+
+        let rollCount = 0;
+        const interval = setInterval(()=>{
+            diceElements.forEach(d=>{
+                d.style.backgroundColor = allColors[Math.floor(Math.random()*allColors.length)];
+                const rotate = Math.random()*90 - 45;
+                const bounce = Math.sin(Date.now()*0.02 + Math.random()*Math.PI*2) * 20;
+                d.style.transform = `rotate(${rotate}deg) translateY(${bounce}px)`;
+            });
+            rollCount++;
+            if(rollCount > 20){
+                clearInterval(interval);
+                diceElements.forEach(d=>{
+                    d.style.backgroundColor = allColors[Math.floor(Math.random()*allColors.length)];
+                    d.style.transform="rotate(0deg) translateY(0)";
+                });
+                isRolling = false;
+                rollButton.disabled = false;
+            }
+        }, 80);
+    }
+
+    rollButton.addEventListener("click", rollDice);
+</script>
+
+</body>
+</html>
